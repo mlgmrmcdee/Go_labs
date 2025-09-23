@@ -6,7 +6,7 @@ import "fmt"
 func main() {
     // Короткое объявление переменных с автоматическим определением типа
     age := 20
-    pi := 3.14
+    pi := 3.14159
     name := "mlgmrmcdee"
     isGoCool := true
 
