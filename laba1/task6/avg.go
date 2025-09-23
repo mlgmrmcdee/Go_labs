@@ -17,4 +17,7 @@ func main() {
 
 	// Вывод результата с двумя знаками после запятой
 	fmt.Printf("Среднее значение: %.2f\n", average)
+
+	fmt.Scanln()
+	fmt.Scanln()
 }

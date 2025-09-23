@@ -27,4 +27,7 @@ func main() {
 	// Вывод результатов
 	fmt.Println("Сумма:", sum)
 	fmt.Println("Разность:", diff)
+
+	fmt.Scanln()
+	fmt.Scanln()
 }

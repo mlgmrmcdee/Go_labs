@@ -15,4 +15,6 @@ func main() {
     fmt.Println("Число с плавающей точкой (float64):", pi)
     fmt.Println("Строка (string):", name)
     fmt.Println("Булево значение (bool):", isGoCool)
+
+    fmt.Scanln()
 }

@@ -28,4 +28,7 @@ func main() {
 	} else {
 		fmt.Println("Деление и остаток невозможны (деление на ноль).")
 	}
+
+	fmt.Scanln()
+	fmt.Scanln()
 }
