@@ -3,4 +3,4 @@
 ## Запуск программ
 
 Просто запустите файлы .exe
-!(go_picture.png)
+![go_picture](./go_picture.png)
