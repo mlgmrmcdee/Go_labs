@@ -1,4 +1,4 @@
-# Лабораторные работы <span style="color:red;">Go</span>
+# Лабораторные работы <span style="color: #29BEB0;">Go</span>
 
 ## Запуск программ
 
