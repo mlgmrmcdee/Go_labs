@@ -10,4 +10,5 @@ func main() {
     reversed := stringutils.Reverse(str)
     fmt.Println("Оригинал:", str)
     fmt.Println("Перевернутая:", reversed)
+    fmt.Scanln()
 }

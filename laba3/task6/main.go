@@ -22,4 +22,5 @@ func main() {
 	}
 
 	fmt.Println("Самая длинная строка:", longest)
+	fmt.Scanln()
 }

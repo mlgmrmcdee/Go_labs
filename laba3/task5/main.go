@@ -18,4 +18,6 @@ func main() {
 	index := 1
 	slice = append(slice[:index], slice[index+1:]...)
 	fmt.Println("После удаления:", slice)
+
+	fmt.Scanln()
 }

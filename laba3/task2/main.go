@@ -29,4 +29,6 @@ func main() {
 	}
 
 	fmt.Printf("Факториал %d = %s\n", n, res.String())
+
+	fmt.Scanln()
 }
