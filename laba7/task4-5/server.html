@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Тест Go HTTP-сервера</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        pre {
+            background: #f7f7f7;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        input {
+            margin: 5px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Тестирование сервера</h2>
+
+    <button id="helloBtn">GET /hello</button>
+    <button id="timeBtn">GET /time</button>
+
+    <h3>POST /data</h3>
+    <input id="name" placeholder="Имя" value="Иван">
+    <input id="email" placeholder="Email" value="ivan@example.com">
+    <button id="sendBtn">Отправить данные</button>
+
+    <h3>Результат:</h3>
+    <pre id="output">—</pre>
+
+    <script>
+        const serverURL = "http://localhost:8080";
+        const output = document.getElementById("output");
+
+        // Кнопка /hello
+        document.getElementById("helloBtn").addEventListener("click", async () => {
+            const res = await fetch(`${serverURL}/hello`);
+            output.textContent = await res.text();
+        });
+
+        // Кнопка /time
+        document.getElementById("timeBtn").addEventListener("click", async () => {
+            const res = await fetch(`${serverURL}/time`);
+            output.textContent = JSON.stringify(await res.json(), null, 2);
+        });
+
+        // Кнопка POST /data
+        document.getElementById("sendBtn").addEventListener("click", async () => {
+            const data = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value
+            };
+
+            const res = await fetch(`${serverURL}/data`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            output.textContent = JSON.stringify(await res.json(), null, 2);
+        });
+    </script>
+</body>
+</html>

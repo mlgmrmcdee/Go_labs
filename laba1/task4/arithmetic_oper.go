@@ -1,4 +1,3 @@
-// Программа для ввода двух чисел и выполнения арифметических операций
 package main
 
 import (
@@ -6,25 +5,21 @@ import (
 )
 
 func main() {
-	// Объявление переменных для хранения чисел
 	var a, b int
 
-	// Ввод чисел от пользователя
 	fmt.Print("Введите первое число: ")
 	fmt.Scan(&a)
 	fmt.Print("Введите второе число: ")
 	fmt.Scan(&b)
 
-	// Вывод результатов операций
 	fmt.Printf("\nРезультаты:\n")
-	fmt.Printf("%d + %d = %d\n", a, b, a+b) // сложение
-	fmt.Printf("%d - %d = %d\n", a, b, a-b) // вычитание
-	fmt.Printf("%d * %d = %d\n", a, b, a*b) // умножение
+	fmt.Printf("%d + %d = %d\n", a, b, a+b)
+	fmt.Printf("%d - %d = %d\n", a, b, a-b)
+	fmt.Printf("%d * %d = %d\n", a, b, a*b)
 
-	// Проверка деления на ноль
 	if b != 0 {
-		fmt.Printf("%d / %d = %d\n", a, b, a/b)   // целочисленное деление
-		fmt.Printf("%d %% %d = %d\n", a, b, a%b) // остаток от деления
+		fmt.Printf("%d / %d = %d\n", a, b, a/b)
+		fmt.Printf("%d %% %d = %d\n", a, b, a%b)
 	} else {
 		fmt.Println("Деление и остаток невозможны (деление на ноль).")
 	}

@@ -5,7 +5,6 @@ import (
 )
 
 func main() {
-	// Создаем срез строк
 	strings := []string{
 		"Привет",
 		"Go",
@@ -13,7 +12,6 @@ func main() {
 		"Программа",
 	}
 
-	// Переменные для хранения самой длинной строки
 	longest := ""
 	for _, s := range strings {
 		if len(s) > len(longest) {
