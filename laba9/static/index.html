@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>REST API Tester</title>
+    <style>
+      body {
+        font-family: Arial;
+        padding: 20px;
+        height: 100%;
+      }
+      .left {
+        width: 50%;
+        float: left;
+      }
+      .right {
+        width: 50%;
+        float: right;
+      }
+      .auth_div > * {
+        display: inline;
+      }
+      input {
+        margin: 5px;
+      }
+      #output {
+        white-space: pre;
+        padding: 10px;
+        margin-top: 10px;
+        height: 80vh;
+        overflow: auto;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="left">
+      <h1>Тестирование REST API с авторизацией</h1>
+
+      <h2>Авторизация</h2>
+      <div class="auth_div">
+        <input id="username" placeholder="Логин" />
+        <input id="password" type="password" placeholder="Пароль" />
+        <button onclick="login()">Войти</button>
+        <button onclick="logout()">Выйти</button>
+        <p id="authStatus"></p>
+      </div>
+
+      <div style="margin-bottom: 12px">
+        <strong>Фильтры:</strong>
+        <input id="filterName" placeholder="Имя (частично)" />
+        <input
+          id="filterMinAge"
+          placeholder="Мин. возраст"
+          style="width: 100px"
+        />
+        <input
+          id="filterMaxAge"
+          placeholder="Макс. возраст"
+          style="width: 100px"
+        />
+        <button onclick="applyFilters()">Применить</button>
+        <button onclick="clearFilters()">Сброс</button><br />
+      </div>
+
+      <h3>Получить всех пользователей</h3>
+      <button onclick="getUsers()">Получить всех пользователей</button>
+
+      <h3>Получить пользователя по ID</h3>
+      <input id="getId" placeholder="ID" />
+      <button onclick="getUser()">Получить</button>
+
+      <h3>Добавить пользователя</h3>
+      <input id="addName" placeholder="Имя" />
+      <input id="addAge" placeholder="Возраст" />
+      <button onclick="addUser()">Добавить</button>
+
+      <h3>Обновить пользователя</h3>
+      <input id="updId" placeholder="ID" />
+      <input id="updName" placeholder="Имя" />
+      <input id="updAge" placeholder="Возраст" />
+      <button onclick="updateUser()">Обновить</button>
+
+      <h3>Удалить пользователя</h3>
+      <input id="delId" placeholder="ID" />
+      <button onclick="deleteUser()">Удалить</button>
+
+      <div>
+        <strong>Пагинация:</strong>
+        <button onclick="changePage(-1)">« Назад</button>
+        <span>Страница <span id="pageDisplay">1</span></span>
+        <button onclick="changePage(1)">Вперёд »</button>
+        <input
+          id="filterLimit"
+          placeholder="На странице"
+          style="width: 80px"
+          value="10"
+        />
+      </div>
+    </div>
+
+    <div class="right">
+      <h2>Ответ:</h2>
+      <pre id="output"></pre>
+    </div>
+
+    <script>
+      // Каждая вкладка — отдельная сессия: token хранится в sessionStorage
+      let token = sessionStorage.getItem("token") || "";
+      let username = sessionStorage.getItem("username") || "";
+
+      function show(data) {
+        document.getElementById("output").textContent =
+          typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      }
+      function saveToken() {
+        if (token) {
+          sessionStorage.setItem("token", token);
+          sessionStorage.setItem("username", username || "");
+        } else {
+          sessionStorage.removeItem("token");
+          sessionStorage.removeItem("username");
+        }
+      }
+
+      function updateAuthStatus() {
+        document.getElementById("authStatus").textContent = token
+          ? `Авторизован как ${username}`
+          : "Не авторизован";
+      }
+
+      function handleResponse(r) {
+        if (r.status === 204) return Promise.resolve({ status: 204 });
+        const ct = r.headers.get("content-type") || "";
+        if (ct.includes("application/json")) return r.json();
+        return r.text().then((t) => ({ status: r.status, text: t }));
+      }
+
+      function handleFetch(promise) {
+        promise
+          .then(handleResponse)
+          .then(show)
+          .catch((err) => show({ error: err.toString() }));
+      }
+
+      function authorizedFetch(url, options = {}) {
+        options.headers = options.headers || {};
+        if (token) options.headers["Authorization"] = token;
+        return fetch(url, options);
+      }
+
+      function login() {
+        const uname = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: uname, password }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.token) {
+              token = data.token;
+              username = uname;
+              saveToken();
+              updateAuthStatus();
+              show("Успешный вход");
+            } else show(data);
+          })
+          .catch((e) => show({ error: e.toString() }));
+      }
+
+      function logout() {
+        if (!token) {
+          show("Нет активной сессии");
+          return;
+        }
+        authorizedFetch("/logout", { method: "POST" })
+          .then(() => {
+            token = "";
+            username = "";
+            saveToken();
+            updateAuthStatus();
+            show("Вы вышли");
+          })
+          .catch((e) => show({ error: e.toString() }));
+      }
+
+      function getCurrentPage() {
+        const p = parseInt(
+          document.getElementById("pageDisplay").textContent || "1",
+          10
+        );
+        return Number.isNaN(p) ? 1 : p;
+      }
+
+      function setCurrentPage(n) {
+        if (n < 1) n = 1;
+        document.getElementById("pageDisplay").textContent = n;
+      }
+
+      function buildQuery() {
+        const params = new URLSearchParams();
+        const name = document.getElementById("filterName").value.trim();
+        const min = document.getElementById("filterMinAge").value.trim();
+        const max = document.getElementById("filterMaxAge").value.trim();
+        const limit = document.getElementById("filterLimit").value.trim();
+        const page = getCurrentPage();
+        if (name) params.append("name", name);
+        if (min) params.append("min_age", min);
+        if (max) params.append("max_age", max);
+        if (limit) params.append("limit", limit);
+        if (page) params.append("page", String(page));
+        return params.toString();
+      }
+
+      function applyFilters() {
+        setCurrentPage(1);
+        const q = buildQuery();
+        const url = q ? "/users?" + q : "/users";
+        handleFetch(authorizedFetch(url));
+      }
+
+      function clearFilters() {
+        document.getElementById("filterName").value = "";
+        document.getElementById("filterMinAge").value = "";
+        document.getElementById("filterMaxAge").value = "";
+        document.getElementById("filterLimit").value = "10";
+        setCurrentPage(1);
+        handleFetch(authorizedFetch("/users"));
+      }
+
+      function changePage(delta) {
+        let p = getCurrentPage() + delta;
+        if (p < 1) p = 1;
+        setCurrentPage(p);
+        const q = buildQuery();
+        const url = q ? "/users?" + q : "/users?page=" + p;
+        handleFetch(authorizedFetch(url));
+      }
+
+      function getUsers() {
+        handleFetch(authorizedFetch("/users"));
+      }
+      function getUser() {
+        handleFetch(
+          authorizedFetch("/users/" + document.getElementById("getId").value)
+        );
+      }
+      function addUser() {
+        let name = document.getElementById("addName").value;
+        let age = parseInt(document.getElementById("addAge").value);
+        handleFetch(
+          authorizedFetch("/users", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, age }),
+          })
+        );
+      }
+      function updateUser() {
+        let id = document.getElementById("updId").value;
+        let name = document.getElementById("updName").value;
+        let age = parseInt(document.getElementById("updAge").value);
+        handleFetch(
+          authorizedFetch("/users/" + id, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, age }),
+          })
+        );
+      }
+      function deleteUser() {
+        let id = document.getElementById("delId").value;
+        handleFetch(authorizedFetch("/users/" + id, { method: "DELETE" }));
+      }
+
+      updateAuthStatus();
+    </script>
+  </body>
+</html>
